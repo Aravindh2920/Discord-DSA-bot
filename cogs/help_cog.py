@@ -12,7 +12,7 @@ class HelpCog(commands.Cog):
 📘 **DSA Bot Help**
 
 🔥 **Daily Flow**
-• `!addproblem <difficulty> <url> <title>`  
+• `!addproblem <title> <difficulty> <url>`  
    → Add a new problem (Admin only)
 
 • `!queueproblem <problem_id> <YYYY-MM-DD>`  

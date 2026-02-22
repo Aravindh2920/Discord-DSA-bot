@@ -6,7 +6,7 @@ IST = pytz.timezone("Asia/Kolkata")
 
 def daily_task(bot, callback):
     """
-    Creates a deterministic daily 8 AM IST task.
+    Creates a deterministic daily 6 AM IST task.
     The callback must be an async function.
     """
 
