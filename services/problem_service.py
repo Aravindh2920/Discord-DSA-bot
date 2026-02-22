@@ -37,3 +37,52 @@ class ProblemService:
         conn.commit()
         cursor.close()
         conn.close()
+
+    @staticmethod
+    def queue_problem(problem_id: int, date_str: str):
+        """
+        Queues a problem for a specific date (YYYY-MM-DD).
+        """
+
+        try:
+            scheduled_date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return False, "Invalid date format. Use YYYY-MM-DD."
+
+        if scheduled_date < datetime.date.today():
+            return False, "Cannot schedule for past dates."
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Check if problem exists
+        cursor.execute(
+            "SELECT id FROM problems WHERE id = %s",
+            (problem_id,)
+        )
+        if not cursor.fetchone():
+            cursor.close()
+            conn.close()
+            return False, "Problem ID does not exist."
+
+        # Check if date already scheduled
+        cursor.execute(
+            "SELECT id FROM problem_queue WHERE scheduled_date = %s",
+            (scheduled_date,)
+        )
+        if cursor.fetchone():
+            cursor.close()
+            conn.close()
+            return False, "A problem is already scheduled for this date."
+
+        # Insert queue entry
+        cursor.execute(
+            "INSERT INTO problem_queue (problem_id, scheduled_date) VALUES (%s, %s)",
+            (problem_id, scheduled_date)
+        )
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return True, "Problem scheduled successfully."

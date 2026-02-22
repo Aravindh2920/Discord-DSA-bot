@@ -52,3 +52,51 @@ class StreakService:
         conn.close()
 
         return current
+    
+    @staticmethod
+    def get_user_stats(discord_id: str):
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Get streak info
+        cursor.execute("""
+            SELECT current_streak, longest_streak
+            FROM users
+            WHERE discord_id = %s
+        """, (discord_id,))
+        user = cursor.fetchone()
+
+        if not user:
+            cursor.close()
+            conn.close()
+            return None
+
+        current_streak, longest_streak = user
+
+        # Total submissions
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM submissions
+            WHERE discord_id = %s
+        """, (discord_id,))
+        total_submissions = cursor.fetchone()[0]
+
+        # Rank calculation
+        cursor.execute("""
+            SELECT COUNT(*) + 1
+            FROM users
+            WHERE current_streak > (
+                SELECT current_streak FROM users WHERE discord_id = %s
+            )
+        """, (discord_id,))
+        rank = cursor.fetchone()[0]
+
+        cursor.close()
+        conn.close()
+
+        return {
+            "current_streak": current_streak,
+            "longest_streak": longest_streak,
+            "total_submissions": total_submissions,
+            "rank": rank
+        }

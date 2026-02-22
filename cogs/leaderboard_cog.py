@@ -1,5 +1,7 @@
 from discord.ext import commands
 from database import get_connection
+from services.streak_service import StreakService
+import discord
 
 class LeaderboardCog(commands.Cog):
 
@@ -32,6 +34,47 @@ class LeaderboardCog(commands.Cog):
             message += f"{i}. {user.name} — {streak} 🔥\n"
 
         await ctx.send(message)
+
+    @commands.command()
+    async def stats(self, ctx):
+        discord_id = str(ctx.author.id)
+
+        stats = StreakService.get_user_stats(discord_id)
+
+        if not stats:
+            await ctx.send("No stats found. Submit a problem first 🔥")
+            return
+
+        embed = discord.Embed(
+            title=f"📊 {ctx.author.name}'s Stats",
+            color=0x00ff99
+        )
+
+        embed.add_field(
+            name="🔥 Current Streak",
+            value=str(stats["current_streak"]),
+            inline=False
+        )
+
+        embed.add_field(
+            name="🏆 Longest Streak",
+            value=str(stats["longest_streak"]),
+            inline=False
+        )
+
+        embed.add_field(
+            name="📦 Total Submissions",
+            value=str(stats["total_submissions"]),
+            inline=False
+        )
+
+        embed.add_field(
+            name="🥇 Rank",
+            value=f"#{stats['rank']}",
+            inline=False
+        )
+
+        await ctx.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(LeaderboardCog(bot))
