@@ -3,6 +3,7 @@ import pytz
 from discord.ext import tasks
 
 IST = pytz.timezone("Asia/Kolkata")
+now = datetime.datetime.now(IST)
 
 def daily_task(bot, callback):
     """
@@ -10,7 +11,12 @@ def daily_task(bot, callback):
     The callback must be an async function.
     """
 
-    @tasks.loop(time=datetime.time(hour=6, minute=00, tzinfo=IST))
+    # @tasks.loop(time=datetime.time(hour=6, minute=00, tzinfo=IST))
+    @tasks.loop(time=datetime.time(
+        hour=now.hour,
+        minute=(now.minute + 1) % 60,
+        tzinfo=IST
+    ))
     async def wrapper():
         await bot.wait_until_ready()
         await callback()
